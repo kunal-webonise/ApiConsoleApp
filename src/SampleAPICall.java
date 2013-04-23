@@ -1,10 +1,20 @@
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 
 public class SampleAPICall
 {
@@ -15,20 +25,21 @@ public class SampleAPICall
    public static void main(String[] args)
    {
      
-      String url = "http://192.168.10.174:3000/api/suggested_profiles.json?profile_id=4fed5c97a90362345700002f";
+      String url = "https://api.twitter.com/1/users/show.json?screen_name=twitterapi";
+      String url1 = "http://192.168.10.174:3000/api/suggested_profiles.json?profile_id=4fed5c99a903623457000067";
       try
-      {  URLConnection connection = new URL(url).openConnection();
+      {  URLConnection connection = new URL(url1).openConnection();
          connection.setRequestProperty("Accept-Charset","charset");
          InputStream response = connection.getInputStream();
 //         String response = getResponse(url);
 //         System.out.println(response);
          String myString = convertStreamToString(response);
-//        System.out.println(myString);
+      System.out.println(myString);
        /*  JsonReader reader = new JsonReader(new InputStreamReader(response));
          JsonParser jsonParser = new JsonParser();
       JsonArray userarray= jsonParser.parse(reader).getAsJsonArray();*/
      /*  String hello = "";*/
-        parse(myString);
+       MyParse(myString,response);
 
 //         System.out.println(userarray);
       }
@@ -38,30 +49,16 @@ public class SampleAPICall
       }
    }
    
-   /*
-    * Retrieve response using commons HttpClient API.
-    */
-   /*private static String getResponse(String url) throws IOException {
-      GetMethod get = new GetMethod(url);
-      new HttpClient().executeMethod(get);
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream() ;
-      byte[] byteArray = new byte[1024];
-      int count = 0 ;
-      while((count = get.getResponseBodyAsStream().read(byteArray, 0, byteArray.length)) > 0)
-      {
-         outputStream.write(byteArray, 0, count) ;
-      }
-      return new String(outputStream.toByteArray(), "UTF-8");
-  }*/
+   
    
    public static String convertStreamToString(java.io.InputStream is) {
 	    java.util.Scanner s = new java.util.Scanner(is).useDelimiter("\\A");
 	    return s.hasNext() ? s.next() : "";
 	}
    
-   public static void parse(String res) {
+   public static void twitterParse(String res, InputStream is) {
 	   System.out.println(res.getClass().getName()); 
-	   try {
+	  /* try {
 		JSONObject jsonObject = new JSONObject(res);
 		JSONArray profiles = jsonObject.getJSONArray("suggested_profiles");
 		System.out.println(profiles.toString());
@@ -80,8 +77,86 @@ public class SampleAPICall
 	} catch (JSONException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
-	}
+	}*/
+	   
+	   Gson gson = new Gson();
+	   System.out.println(gson.toJson(1).getClass());
+	   TwitterUser u = new TwitterUser();
+	   System.out.println(u);
+	   String json = gson.toJson(u);
+	   System.out.println("MYJSON OBJECT::::::::::::::"+json);
+	   
+	   TwitterUser desobject = gson.fromJson(json, TwitterUser.class);
+	   
+	   System.out.println("DEs OBJECT:=================:::::::::::::"+desobject);
+	   
+	   JsonElement jelement = new JsonParser().parse(res); 
+	   System.out.println(jelement);
+	   TwitterUser desobject2 = gson.fromJson(jelement, TwitterUser.class);
+	   System.out.println("DEs OBJECT22222222222:=================:::::::::::::"+desobject2);
+	   
+	   
 	   
 	}
+   
+   public static void MyParse(String res, InputStream is) {
+	   System.out.println(res.getClass().getName()); 
+	  /* try {
+		JSONObject jsonObject = new JSONObject(res);
+		JSONArray profiles = jsonObject.getJSONArray("suggested_profiles");
+		System.out.println(profiles.toString());
+		System.out.println(profiles.length());
+		for(int i=0; 1<profiles.length();i++)
+		{  
+			JSONObject resultObj = profiles.getJSONObject(i);
+			String gender = resultObj.getString("gender");
+			System.out.println(gender);
+			String id = resultObj.getString("_id");
+			System.out.println(id);
+			String pick = resultObj.getString("pickup_line");
+			System.out.println(pick);
+		}
+		
+	} catch (JSONException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}*/
+	   
+	   Gson gson = new Gson();
+	   
+	   
+	 
+	   
+	  
+	   
+	   JsonElement jelement = new JsonParser().parse(res); 
+	   System.out.println(jelement);
+	   JsonObject jobject = jelement.getAsJsonObject();
+	   System.out.println("Jobject::"+jobject);
+	   jobject.get("success");
+	   System.out.println("Success::"+ jobject.get("success"));
+	   JsonArray  profiles = jobject.getAsJsonArray("suggested_profiles");
+	   System.out.println("Array::"+ profiles.getClass());
+	   
+	   /*TwitterUser desobject2 = gson.fromJson(jelement, TwitterUser.class);
+	   System.out.println("DEs OBJECT22222222222:=================:::::::::::::"+desobject2);*/
+     UserProfile desobject = gson.fromJson(profiles.get(1), UserProfile.class);
+     System.out.println("user Profile::"+ desobject.getPickup_line()); 
+     ArrayList users = new ArrayList();
+     for (JsonElement u : profiles)
+     {
+    	 System.out.println("user Profile::"+ gson.fromJson(u, UserProfile.class).getPickup_line());
+    	 users.add(gson.fromJson(u, UserProfile.class));
+     }
+    
+     for(int i=0; i<users.size(); i++)
+     {
+    	System.out.println(users.get(i)); 
+     }
+    
+	   
+	   
+	}
+
 
 }      
